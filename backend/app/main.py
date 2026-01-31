@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 import models
 from database import engine
-# Assuming the router files are named auth_routes.py and task_routes.py
-import auth_routes
-import task_routes
+
+# --- FIXED IMPORTS BELOW ---
+# We use "from routers import..." because your files are in the routers/ folder
+from routers import auth, tasks 
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -15,9 +16,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Include routers
-app.include_router(auth_routes.router)
-app.include_router(task_routes.router)
+# --- FIXED ROUTER INCLUDES ---
+app.include_router(auth.router)
+app.include_router(tasks.router)
 
 @app.get("/", tags=["Health"])
 def health_check():
