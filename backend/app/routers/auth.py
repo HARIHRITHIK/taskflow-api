@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -43,9 +44,15 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login")
-def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
-    # Find user
-    user = db.query(models.User).filter(models.User.email == user_credentials.email).first()
+def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # FIX: We now accept form data (for Swagger UI support)
+    
+    # 1. Try to find user by Email first (because Swagger labels the field "username")
+    user = db.query(models.User).filter(models.User.email == user_credentials.username).first()
+    
+    # 2. If not found by email, try finding by actual username
+    if not user:
+        user = db.query(models.User).filter(models.User.username == user_credentials.username).first()
     
     # Verify user and password
     if not user or not auth.verify_password(user_credentials.password, user.hashed_password):
