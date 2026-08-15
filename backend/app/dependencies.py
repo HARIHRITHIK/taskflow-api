@@ -1,22 +1,25 @@
+from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import Optional
 
-import auth
-import models
-from database import get_db
+from app.core import security
+from app.core.config import settings
+from app.models import User
+from app.database import get_db
+from app.repositories.user_repository import UserRepository
 
-# Defines the token endpoint for Swagger UI
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# OAuth2 scheme defining token URL for Swagger UI authorization
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
-):
+) -> User:
     """
-    Dependency that extracts the JWT token, validates it,
-    and retrieves the corresponding user from the database.
+    Dependency extracting JWT bearer token from request header,
+    decoding token claims, and retrieving current user from DB.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -24,18 +27,19 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    # Verify token signature and expiration
-    payload = auth.verify_access_token(token)
+    # 1. Decode and verify JWT access token
+    payload = security.verify_access_token(token)
     if payload is None:
         raise credentials_exception
 
-    # Extract user identifier (email) from payload
+    # 2. Extract user identifier (email) from token sub claim
     email: Optional[str] = payload.get("sub")
     if email is None:
         raise credentials_exception
 
-    # Retrieve user from database
-    user = db.query(models.User).filter(models.User.email == email).first()
+    # 3. Retrieve user from repository
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_email(email)
     if user is None:
         raise credentials_exception
 
