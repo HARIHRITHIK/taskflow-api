@@ -94,7 +94,7 @@ def init_db():
 
 init_db()
 
-# Premium SaaS styling & surgical UI cleanup
+# Premium SaaS styling & sidebar controls fix
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -102,18 +102,27 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* Surgically hide Streamlit Deploy Button, Header Toolbar, MainMenu, and Footer */
+    /* Hide Deploy button, Streamlit Decoration line, and Main Menu */
     .stDeployButton,
-    [data-testid="stToolbar"],
-    [data-testid="stHeaderActionElements"],
-    header[data-testid="stHeader"],
-    header,
+    [data-testid="stAppDeployButton"],
     #MainMenu,
-    footer {
-        visibility: hidden !important;
+    footer,
+    [data-testid="stDecoration"] {
         display: none !important;
-        height: 0px !important;
-        padding: 0px !important;
+        visibility: hidden !important;
+    }
+
+    /* Keep header transparent so the sidebar toggle arrow is visible & clickable */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+    }
+    
+    /* Ensure the sidebar collapse/expand controls are always visible */
+    [data-testid="collapsedControl"],
+    [data-testid="stSidebarCollapseButton"] {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 99999 !important;
     }
 
     .badge-urgent { background-color: #FEE2E2; color: #991B1B; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
