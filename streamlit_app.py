@@ -94,17 +94,33 @@ def init_db():
 
 init_db()
 
-# Premium SaaS styling
+# Premium SaaS styling & surgical UI cleanup
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
+    
+    /* Surgically hide Streamlit Deploy Button, Header Toolbar, MainMenu, and Footer */
+    .stDeployButton,
+    [data-testid="stToolbar"],
+    [data-testid="stHeaderActionElements"],
+    header[data-testid="stHeader"],
+    header,
+    #MainMenu,
+    footer {
+        visibility: hidden !important;
+        display: none !important;
+        height: 0px !important;
+        padding: 0px !important;
+    }
+
     .badge-urgent { background-color: #FEE2E2; color: #991B1B; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
     .badge-high { background-color: #FFEDD5; color: #9A3412; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
     .badge-medium { background-color: #E0E7FF; color: #3730A3; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
     .badge-low { background-color: #DCFCE7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
+    
     .task-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
@@ -125,12 +141,6 @@ with st.sidebar:
     st.markdown("👤 **Active User:** `admin@taskflow.dev`")
     st.markdown("🟢 **API Status:** Connected")
     st.markdown("📦 **Version:** `1.0.0`")
-    st.divider()
-
-    st.markdown("### 🔗 **Developer Links**")
-    st.markdown("📖 [Interactive Swagger Docs](http://localhost:8000/docs)")
-    st.markdown("📄 [Alternative ReDoc Docs](http://localhost:8000/redoc)")
-    st.markdown("💻 [GitHub Repository](https://github.com/HARIHRITHIK/taskflow-api)")
 
 # Main Header
 st.title("⚡ TaskFlow Work Management Platform")
