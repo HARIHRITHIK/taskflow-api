@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from datetime import datetime, timezone, date
 
 # Ensure backend directory is in python path
@@ -9,12 +10,14 @@ if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
 import streamlit as st
+from sqlalchemy import text
 
 # Application domain imports
 from app.database import engine, SessionLocal, Base
 from app.models import User, Task, TaskPriority
-from app.schemas import TaskCreate, TaskUpdate
+from app.schemas import TaskCreate, TaskUpdate, UserCreate
 from app.services.task_service import TaskService
+from app.services.auth_service import AuthService
 from app.core import security
 
 # Page Configuration
@@ -129,14 +132,6 @@ st.markdown("""
     .badge-high { background-color: #FFEDD5; color: #9A3412; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
     .badge-medium { background-color: #E0E7FF; color: #3730A3; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
     .badge-low { background-color: #DCFCE7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
-    
-    .task-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin-bottom: 0.8rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -146,10 +141,12 @@ with st.sidebar:
     st.caption("Work Execution & Workflow Platform")
     st.divider()
 
-    st.markdown("### 🏢 **Workspace**")
-    st.markdown("👤 **Active User:** `admin@taskflow.dev`")
-    st.markdown("🟢 **API Status:** Connected")
-    st.markdown("📦 **Version:** `1.0.0`")
+    st.markdown("### 🏢 **Workspace Account**")
+    st.markdown("👤 **Current User:** `admin@taskflow.dev`")
+    st.markdown("🟢 **Database Engine:** Connected")
+    st.markdown("📦 **API Version:** `v1.0.0`")
+    st.divider()
+    st.caption("Built with FastAPI, SQLAlchemy & PostgreSQL.")
 
 # Main Header
 st.title("⚡ TaskFlow Work Management Platform")
@@ -232,7 +229,7 @@ with tab_tasks:
         for task in paginated_tasks.items:
             badge_class = f"badge-{task.priority.lower()}"
             with st.container():
-                c1, c2, c3, c4 = st.columns([5, 2, 2, 1.5])
+                c1, c2, c3, c4, c5 = st.columns([4.5, 2, 1.5, 1.5, 1.2])
                 with c1:
                     status_icon = "🟢" if task.is_completed else "⏳"
                     st.markdown(f"**{status_icon} {task.title}**")
@@ -246,7 +243,7 @@ with tab_tasks:
                         st.caption(f"📅 {task.due_date.strftime('%b %d, %Y')}")
                 with c3:
                     if task.is_completed:
-                        if st.button("Mark Incomplete", key=f"reopen_{task.id}", use_container_width=True):
+                        if st.button("Mark Pending", key=f"reopen_{task.id}", use_container_width=True):
                             task_service.update_task(task.id, TaskUpdate(is_completed=False), user_id)
                             st.rerun()
                     else:
@@ -254,7 +251,32 @@ with tab_tasks:
                             task_service.update_task(task.id, TaskUpdate(is_completed=True), user_id)
                             st.rerun()
                 with c4:
-                    if st.button("Delete", key=f"del_{task.id}", use_container_width=True):
+                    with st.popover("✏️ Edit", use_container_width=True):
+                        with st.form(f"edit_form_{task.id}"):
+                            edit_title = st.text_input("Title", value=task.title)
+                            edit_desc = st.text_area("Description", value=task.description or "")
+                            edit_priority = st.selectbox(
+                                "Priority", 
+                                [p.value for p in TaskPriority],
+                                index=[p.value for p in TaskPriority].index(task.priority) if task.priority in [p.value for p in TaskPriority] else 1
+                            )
+                            edit_tags = st.text_input("Tags", value=task.tags or "")
+                            
+                            if st.form_submit_button("Save Changes"):
+                                task_service.update_task(
+                                    task.id,
+                                    TaskUpdate(
+                                        title=edit_title,
+                                        description=edit_desc,
+                                        priority=TaskPriority(edit_priority),
+                                        tags=edit_tags
+                                    ),
+                                    user_id
+                                )
+                                st.success("Task updated.")
+                                st.rerun()
+                with c5:
+                    if st.button("🗑️", key=f"del_{task.id}", use_container_width=True, help="Soft Delete"):
                         task_service.delete_task(task.id, user_id)
                         st.rerun()
                 st.divider()
@@ -301,44 +323,71 @@ with tab_analytics:
 # ==========================================
 with tab_developer:
     st.subheader("🔑 Developer API Credentials & Authentication")
-    st.markdown("Generate and test signed JWT bearer tokens for integration with TaskFlow REST API.")
+    st.markdown("Generate and verify signed JWT bearer tokens and Argon2id password hashes in real-time.")
 
-    col_jwt, col_curl = st.columns(2)
+    col_jwt, col_hash = st.columns(2)
     with col_jwt:
-        st.markdown("#### 🎫 JWT Access Token")
+        st.markdown("#### 🎫 JWT Access Token Generator")
         target_email = st.text_input("User Identity (email)", value="admin@taskflow.dev")
         if st.button("Generate Bearer Token", use_container_width=True):
             token = security.create_access_token(data={"sub": target_email})
             st.code(f"Bearer {token}", language="text")
             st.success("Signed JWT token generated with HS256 HMAC-SHA256 signature.")
 
-    with col_curl:
-        st.markdown("#### 🌐 cURL Integration Example")
-        st.code("""
-curl -X GET "http://localhost:8000/api/v1/tasks/?page=1&page_size=10" \\
-  -H "Authorization: Bearer <ACCESS_TOKEN>" \\
+    with col_hash:
+        st.markdown("#### 🛡️ Argon2id Password Hasher")
+        raw_password = st.text_input("Password to Hash", value="TaskFlowDemo123!", type="password")
+        if st.button("Compute Argon2id Hash", use_container_width=True):
+            hashed = security.get_password_hash(raw_password)
+            st.code(hashed, language="text")
+            st.caption("OWASP recommended memory-hard hashing resistant to GPU/ASIC attacks.")
+
+    st.divider()
+    st.markdown("#### 🌐 REST API Integration Example")
+    st.code("""
+# Retrieve paginated tasks
+curl -X GET "http://localhost:8000/api/v1/tasks/?page=1&page_size=10&priority=HIGH" \\
+  -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \\
   -H "Content-Type: application/json"
-        """, language="bash")
+    """, language="bash")
 
 # ==========================================
 # TAB 4: TELEMETRY & HEALTH
 # ==========================================
 with tab_status:
     st.subheader("🏥 System Telemetry & Operational Probes")
+    
+    # Real database ping measurement
+    db = SessionLocal()
+    try:
+        t0 = time.perf_counter()
+        db.execute(text("SELECT 1"))
+        latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+        db_status_text = f"Connected (Query Latency: {latency_ms} ms)"
+        db_healthy = True
+    except Exception as e:
+        db_status_text = f"Error: {str(e)}"
+        db_healthy = False
+    finally:
+        db.close()
+
     c1, c2, c3 = st.columns(3)
     with c1:
         st.success("✅ **Liveness Probe (`/health`)**\n\nASGI Process Status: `HEALTHY`")
     with c2:
-        st.success("✅ **Readiness Probe (`/ready`)**\n\nDatabase Pool Status: `CONNECTED`")
+        if db_healthy:
+            st.success(f"✅ **Readiness Probe (`/ready`)**\n\nDatabase: `{db_status_text}`")
+        else:
+            st.error(f"❌ **Readiness Probe (`/ready`)**\n\nDatabase: `{db_status_text}`")
     with c3:
         st.info("📦 **Engine Version (`/version`)**\n\nTaskFlow Version: `v1.0.0`")
 
     st.divider()
-    st.markdown("#### ⚙️ Engine Specifications")
+    st.markdown("#### ⚙️ Technical Architecture Specifications")
     st.markdown("""
-    - **Framework:** FastAPI 0.100+ (Asynchronous ASGI)
-    - **ORM & Migrations:** SQLAlchemy 2.0 + Alembic
-    - **Security:** OWASP Argon2id password hashing + JWT Bearer Auth
-    - **Rate Limiting:** SlowAPI token bucket limiting on authentication routes
-    - **Architecture:** 3-Tier Layered Architecture (`Router -> Service -> Repository`)
+    - **API Engine:** FastAPI 0.100+ (Asynchronous ASGI)
+    - **ORM & Migrations:** SQLAlchemy 2.0 + Alembic version-controlled scripts
+    - **Security:** OWASP Argon2id password hashing + JWT Bearer Token validation
+    - **Rate Limiting:** SlowAPI token bucket rate limiters on authentication endpoints
+    - **Pattern:** 3-Tier Layered Architecture (`Router -> Service -> Repository`)
     """)
