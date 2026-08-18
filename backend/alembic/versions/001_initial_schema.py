@@ -24,8 +24,8 @@ def upgrade() -> None:
         sa.Column('username', sa.String(), nullable=True),
         sa.Column('email', sa.String(), nullable=True),
         sa.Column('hashed_password', sa.String(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=True, server_default=sa.text('true')),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=True, server_default=sa.text('1')),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
@@ -38,17 +38,26 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('title', sa.String(), nullable=True),
         sa.Column('description', sa.String(), nullable=True),
-        sa.Column('is_completed', sa.Boolean(), nullable=True, server_default=sa.text('false')),
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('priority', sa.String(), nullable=True, server_default='MEDIUM'),
+        sa.Column('due_date', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('tags', sa.String(), nullable=True),
+        sa.Column('is_completed', sa.Boolean(), nullable=True, server_default=sa.text('0')),
+        sa.Column('is_deleted', sa.Boolean(), nullable=True, server_default=sa.text('0')),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=True),
         sa.Column('owner_id', sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(['owner_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_tasks_id'), 'tasks', ['id'], unique=False)
     op.create_index(op.f('ix_tasks_title'), 'tasks', ['title'], unique=False)
+    op.create_index(op.f('ix_tasks_priority'), 'tasks', ['priority'], unique=False)
+    op.create_index(op.f('ix_tasks_is_deleted'), 'tasks', ['is_deleted'], unique=False)
 
 
 def downgrade() -> None:
+    op.drop_index(op.f('ix_tasks_is_deleted'), table_name='tasks')
+    op.drop_index(op.f('ix_tasks_priority'), table_name='tasks')
     op.drop_index(op.f('ix_tasks_title'), table_name='tasks')
     op.drop_index(op.f('ix_tasks_id'), table_name='tasks')
     op.drop_table('tasks')

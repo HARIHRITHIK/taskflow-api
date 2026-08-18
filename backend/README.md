@@ -15,10 +15,13 @@ A production-inspired Python REST API platform engineered with FastAPI, PostgreS
 ## ⚡ Quickstart
 
 ```bash
-# 1. Run database seeder
+# 1. Run database migrations
+alembic upgrade head
+
+# 2. Run database seeder
 python scripts/seed.py
 
-# 2. Start Uvicorn server
+# 3. Start Uvicorn server
 uvicorn app.main:app --reload --port 8000
 ```
 - Swagger UI: `http://127.0.0.1:8000/docs`

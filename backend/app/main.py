@@ -5,12 +5,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.limiter import limiter
-from app.models import Base
-from app.database import engine
 from app.routers import auth, tasks, system
-
-# Create database tables
-Base.metadata.create_all(bind=engine)
 
 # OpenAPI Tag Metadata Specifications
 openapi_tags = [

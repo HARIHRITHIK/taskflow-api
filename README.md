@@ -36,27 +36,27 @@ Interactive OpenAPI 3.0 documentation allowing developers and hiring teams to in
 
 ### Adding Screenshots
 
-To display real screenshots directly in this README:
+To display screenshots in this README:
 1. Navigate to the [`assets/screenshots/`](assets/screenshots/) directory.
-2. Upload the screenshot files directly through GitHub named `dashboard.png` and `swagger.png`.
-3. Commit changes—the README will automatically render your live screenshots.
+2. Upload screenshot images named `dashboard.png` and `swagger.png` directly via GitHub.
+3. Commit changes—the README will automatically display them.
 
 ---
 
 ## Problem
 
-Most portfolio backend repositories stop at basic CRUD tutorials. They frequently suffer from:
-- **Tightly Coupled Code:** Direct database queries embedded inside web route handlers.
+Most backend projects stop at basic CRUD tutorials, exhibiting critical engineering deficiencies:
+- **Tightly Coupled Layers:** Direct database queries embedded inside web route handlers.
 - **Outdated Password Security:** Reliance on legacy hashing algorithms vulnerable to modern GPU brute-force attacks.
 - **Unversioned Databases:** Reliance on unsafe `create_all()` calls that cannot safely alter or migrate production databases.
 - **Zero Automated Testing:** Lack of automated test suites and continuous integration pipelines.
-- **Missing Telemetry:** No health probes (`/health`, `/ready`) or operational visibility.
+- **Missing Observability:** Absence of health probes (`/health`, `/ready`) and operational telemetry.
 
 ---
 
 ## Solution
 
-**TaskFlow API** bridges the gap between tutorial projects and production-grade software engineering. It implements a strict **3-Tier Layered Architecture** (`Router -> Service -> Repository`), industry-standard **Argon2id** password hashing, stateless **OAuth2 JWT** authentication, version-controlled **Alembic** schema migrations, comprehensive **Pytest** automation with **GitHub Actions CI**, and an interactive **Streamlit Web Dashboard**.
+**TaskFlow API** implements an industry-standard **3-Tier Layered Architecture** (`Router -> Service -> Repository`), OWASP-recommended **Argon2id** password hashing, stateless **OAuth2 JWT** authentication, version-controlled **Alembic** schema migrations, comprehensive **Pytest** test automation with **GitHub Actions CI**, and an interactive **Streamlit Web Dashboard**.
 
 ---
 
@@ -72,7 +72,7 @@ Most portfolio backend repositories stop at basic CRUD tutorials. They frequentl
 - 📦 **Enveloped Metadata Pagination:** Standardized responses returning `items`, `total`, `page`, `page_size`, and `total_pages`.
 - 🗑️ **Auditable Soft Deletion:** Preserves historical data integrity and recovery without destructive SQL deletions.
 - 🏥 **Operational Probes & Telemetry:** Liveness (`/health`), readiness (`/ready`), and real-time system metrics (`/api/v1/system/stats`).
-- 🧪 **100% Automated Test Coverage:** Pytest test suite running against isolated in-memory SQLite databases.
+- 🧪 **Automated Test Suite:** Pytest test suite executed against isolated in-memory SQLite databases.
 
 ---
 
@@ -98,7 +98,7 @@ TaskFlow API adopts a defense-in-depth security model:
 1. **Password Hashing:** Utilizes **Argon2id** (`argon2-cffi`), the winner of the Password Hashing Competition (PHC) and OWASP-recommended standard.
 2. **Stateless Authorization:** Issues signed JWT tokens using HMAC-SHA256 (`HS256`).
 3. **Endpoint Rate Limiting:** Enforces `10 requests/minute` per remote client IP on sensitive authentication routes.
-4. **Environment Isolation:** Validates environment variables at startup using `pydantic-settings`, failing fast if required secrets are absent.
+4. **Environment Isolation:** Validates environment variables at startup using `pydantic-settings`, failing fast if production secrets are missing or insecure.
 
 ---
 
@@ -250,14 +250,20 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Seed Sample Database
+### 2. Run Database Migrations & Seed Sample Data
 ```bash
-python backend/scripts/seed.py
+# Apply migrations
+cd backend
+alembic upgrade head
+
+# Seed initial admin user and demo tasks
+python scripts/seed.py
 ```
 *(Creates demo user `admin@taskflow.dev` / `TaskFlowDemo123!` and realistic sample work items).*
 
 ### 3. Launch Interactive Work Management Dashboard
 ```bash
+cd ..
 streamlit run streamlit_app.py
 ```
 👉 Access dashboard at `http://localhost:8501`.
@@ -276,7 +282,7 @@ python -m uvicorn app.main:app --reload --port 8000
 The platform is deployment-ready for free cloud platforms:
 
 - **Streamlit Community Cloud:** Point `share.streamlit.io` to repository `HARIHRITHIK/taskflow-api` with main file `streamlit_app.py`.
-- **Render / Railway (FastAPI):** Configured via root [`Procfile`](Procfile) targeting `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}`.
+- **Render / Railway (FastAPI):** Configured via root [`Procfile`](Procfile) using `uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port ${PORT:-8000}`.
 
 ---
 
@@ -290,34 +296,6 @@ The platform is deployment-ready for free cloud platforms:
 | **Argon2id Hashing** | Recommended by OWASP as the superior memory-hard password hashing algorithm resistant to GPU-accelerated brute-force attacks. |
 | **Soft Deletion (`is_deleted`)** | Preserves historical auditability and data recovery while seamlessly filtering out deleted records from user queries. |
 | **Pydantic Settings** | Validates environment variables at application startup, failing fast if mandatory configuration keys are missing. |
-
----
-
-## Interview Q&A
-
-<details>
-<summary><strong>Q1: Why did you separate the architecture into Routers, Services, and Repositories?</strong></summary>
-
-> *"I implemented a 3-tier architecture to enforce single responsibility. Routers handle HTTP request parsing and response formatting, Services encapsulate domain logic and authorization rules, and Repositories isolate database queries. This keeps the codebase modular and allows us to unit-test business logic without spinning up a live database."*
-</details>
-
-<details>
-<summary><strong>Q2: Why choose Argon2id over Bcrypt or SHA-256 for password hashing?</strong></summary>
-
-> *"Argon2id is the winner of the Password Hashing Competition and the current OWASP recommendation. Unlike SHA-256 (which is fast and easily cracked on GPUs) or older Bcrypt implementations, Argon2id is memory-hard, making hardware-accelerated dictionary attacks computationally prohibitive."*
-</details>
-
-<details>
-<summary><strong>Q3: How do you prevent User A from accessing User B's tasks?</strong></summary>
-
-> *"Tenant isolation is enforced in the Service and Repository layers. When a user authenticates, their verified `user_id` is extracted from the JWT token. Every read, update, or soft-delete query strictly includes `filter(Task.owner_id == user_id)`, ensuring users can never query or mutate records belonging to other accounts."*
-</details>
-
-<details>
-<summary><strong>Q4: Why use Alembic instead of `Base.metadata.create_all()`?</strong></summary>
-
-> *"`create_all()` only creates tables if they do not already exist; it cannot apply schema alterations like adding new columns, altering data types, or rolling back changes in an existing production database. Alembic tracks schema changes in versioned Python scripts for safe, deterministic database evolution."*
-</details>
 
 ---
 
