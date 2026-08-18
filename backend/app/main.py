@@ -12,13 +12,49 @@ from app.routers import auth, tasks, system
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# OpenAPI Tag Metadata Specifications
+openapi_tags = [
+    {
+        "name": "Authentication",
+        "description": "User account registration, credential authentication, and JWT Bearer token issuance.",
+    },
+    {
+        "name": "Tasks",
+        "description": "Full multi-tenant task management with priority scheduling, full-text search, filtering, and soft-delete capabilities.",
+    },
+    {
+        "name": "Operational Probes & System Metrics",
+        "description": "Liveness, readiness, version info, and live operational system metrics for platform observability.",
+    },
+]
+
 # Initialize TaskFlow API Application
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Production-inspired REST API for workflow & task management",
+    description="""
+### TaskFlow API — Production-Inspired Work Execution Platform
+
+TaskFlow API is a high-performance REST API platform engineered with a strict 3-tier layered architecture (`Router -> Service -> Repository`), OWASP Argon2id password security, OAuth2 JWT authentication, Alembic database migrations, and rate-limiting.
+
+#### 🚀 Key Features:
+* **OAuth2 JWT Authentication** with Argon2id cryptographic hashing.
+* **Multi-Tenant User Isolation** ensuring data privacy across accounts.
+* **Full CRUD Operations** with priority scheduling, search, filtering, and soft deletion.
+* **Enveloped Pagination** (`items`, `total`, `page`, `page_size`, `total_pages`).
+* **Operational Probes & Telemetry** (`/health`, `/ready`, `/version`, `/api/v1/system/stats`).
+    """,
     version=settings.VERSION,
+    openapi_tags=openapi_tags,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    contact={
+        "name": "Hari Hrithik",
+        "url": "https://github.com/HARIHRITHIK/taskflow-api",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
 # Register Rate Limiter State & Exception Handler
@@ -42,12 +78,12 @@ app.include_router(tasks.router, prefix=settings.API_V1_STR)
 
 @app.get("/", include_in_schema=False)
 def root():
-    """Root endpoint returning service identity and core links."""
+    """Root endpoint returning service identity and core navigation links."""
     return {
         "service": settings.PROJECT_NAME,
         "status": "online",
         "version": settings.VERSION,
         "docs_url": "/docs",
         "health_url": "/health",
-        "stats_url": f"{settings.API_V1_STR}/system/stats"
+        "stats_url": f"{settings.API_V1_STR}/system/stats",
     }
