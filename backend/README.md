@@ -6,8 +6,8 @@ A production-inspired Python REST API platform engineered with FastAPI, PostgreS
 
 ## 🚀 Live Demo & Documentation
 
-> **Live Demo:** [ADD LIVE DEMO URL HERE]  
-> **Swagger UI:** [ADD SWAGGER URL HERE]  
+> **Live Web Demo:** [taskflow-api.streamlit.app](https://taskflow-api.streamlit.app/)  
+> **Interactive API Docs (Local & Docker):** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
 > **Full Documentation:** Refer to the root [README.md](../README.md) and [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md).
 
 ---

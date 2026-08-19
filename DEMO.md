@@ -1,7 +1,7 @@
 # ⚡ 2-Minute Recruiter Demo: TaskFlow Platform
 
-> **Live Demo:** [ADD LIVE DEMO URL HERE]  
-> **Swagger Documentation:** [ADD SWAGGER URL HERE]  
+> **Live Demo:** [https://taskflow-api.streamlit.app/](https://taskflow-api.streamlit.app/)  
+> **Interactive API Docs (Local & Docker):** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
 > **GitHub Repository:** [https://github.com/HARIHRITHIK/taskflow-api](https://github.com/HARIHRITHIK/taskflow-api)
 
 ---
@@ -11,7 +11,7 @@
 Follow these 9 quick steps to evaluate the end-to-end functionality of TaskFlow:
 
 ### 1. Open the Live Demo
-Navigate to the **[Live Demo URL]** in your browser. The application automatically initializes the database schema and loads realistic pre-seeded sample data for `admin@taskflow.dev`.
+Navigate to **[taskflow-api.streamlit.app](https://taskflow-api.streamlit.app/)** in your browser. The application automatically initializes the database schema and loads realistic pre-seeded sample data for `admin@taskflow.dev`.
 
 ### 2. View the Work Management Dashboard
 Observe the clean, modern SaaS workspace layout featuring real-time task items, priority tags (`URGENT`, `HIGH`, `MEDIUM`, `LOW`), and inline status indicators.
@@ -44,4 +44,4 @@ Switch to the **"🔑 API Developer Console"** tab to:
 - Generate signed **JWT Bearer Access Tokens** (`HS256`) for API integration.
 
 ### 9. Explore Interactive Swagger Documentation
-Open the **[Swagger Documentation URL]** (`/docs`) to test the underlying FastAPI REST endpoints (`GET /api/v1/tasks/`, `POST /api/v1/auth/login`, `GET /health`) with interactive OpenAPI request validation.
+Open **[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)** to test the underlying FastAPI REST endpoints (`GET /api/v1/tasks/`, `POST /api/v1/auth/login`, `GET /health`) with interactive OpenAPI request validation.

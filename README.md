@@ -14,15 +14,15 @@ A production-inspired Python REST API and workflow execution platform engineered
 
 ## 🚀 Live Demo
 
-> **Live Demo:** [ADD LIVE DEMO URL HERE]
+> **Live Demo:** [taskflow-api.streamlit.app](https://taskflow-api.streamlit.app/)
 
-Explore the interactive **TaskFlow Work Management Platform** web interface featuring real-time task creation, inline editing, search, priority filtering, and operational telemetry.
+Explore the live, interactive **TaskFlow Work Management Platform** web interface featuring real-time task creation, inline editing, search, priority filtering, and operational telemetry.
 
 ---
 
 ## 📚 API Documentation
 
-> **Swagger UI:** [ADD SWAGGER URL HERE]
+> **Interactive API Docs (Local & Docker):** Available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 Interactive OpenAPI 3.0 documentation allowing developers and hiring teams to inspect request schemas, test authentication, and execute live API calls.
 
