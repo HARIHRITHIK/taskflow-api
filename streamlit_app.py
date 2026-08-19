@@ -97,7 +97,7 @@ def init_db():
 
 init_db()
 
-# Premium SaaS styling & sidebar controls fix
+# Premium SaaS styling & surgical UI cleanup
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -105,14 +105,24 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* Hide Deploy button, Streamlit Decoration line, and Main Menu */
+    /* Surgically hide ALL Streamlit Cloud toolbar actions (Share, Star, Edit, GitHub, Deploy, MainMenu, Footer) */
     .stDeployButton,
     [data-testid="stAppDeployButton"],
+    [data-testid="stHeaderActionElements"],
+    [data-testid="stToolbarActions"],
+    [data-testid="stToolbar"],
+    .stAppToolbar,
+    [data-testid="manage-app-button"],
     #MainMenu,
     footer,
-    [data-testid="stDecoration"] {
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"] {
         display: none !important;
         visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0px !important;
+        width: 0px !important;
+        pointer-events: none !important;
     }
 
     /* Keep header transparent so the sidebar toggle arrow is visible & clickable */
@@ -120,12 +130,16 @@ st.markdown("""
         background: transparent !important;
     }
     
-    /* Ensure the sidebar collapse/expand controls are always visible */
+    /* Ensure ONLY the sidebar collapse/expand controls are always visible */
     [data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapseButton"] {
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="collapsedControl"] button,
+    [data-testid="stSidebarCollapseButton"] button {
         display: flex !important;
         visibility: visible !important;
-        z-index: 99999 !important;
+        opacity: 1 !important;
+        z-index: 999999 !important;
+        pointer-events: auto !important;
     }
 
     .badge-urgent { background-color: #FEE2E2; color: #991B1B; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; }
