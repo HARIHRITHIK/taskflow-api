@@ -1,4 +1,4 @@
-# ⚡ 2-Minute Recruiter Demo: TaskFlow Platform
+# ⚡ 2-Minute Quickstart Demo: TaskFlow Platform
 
 > **Live Demo:** [https://taskflow-api.streamlit.app/](https://taskflow-api.streamlit.app/)  
 > **Interactive API Docs (Local & Docker):** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  

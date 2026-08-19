@@ -24,7 +24,7 @@ Explore the live, interactive **TaskFlow Work Management Platform** web interfac
 
 > **Interactive API Docs (Local & Docker):** Available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-Interactive OpenAPI 3.0 documentation allowing developers and hiring teams to inspect request schemas, test authentication, and execute live API calls.
+Interactive OpenAPI 3.0 documentation allowing developers to inspect request schemas, test authentication, and execute live API calls.
 
 ---
 
@@ -33,13 +33,6 @@ Interactive OpenAPI 3.0 documentation allowing developers and hiring teams to in
 ![TaskFlow Dashboard](assets/screenshots/dashboard.png)
 
 ![Swagger UI Documentation](assets/screenshots/swagger.png)
-
-### Adding Screenshots
-
-To display screenshots in this README:
-1. Navigate to the [`assets/screenshots/`](assets/screenshots/) directory.
-2. Upload screenshot images named `dashboard.png` and `swagger.png` directly via GitHub.
-3. Commit changes—the README will automatically display them.
 
 ---
 
